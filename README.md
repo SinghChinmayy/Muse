@@ -33,6 +33,8 @@ on again in Accessibility.
 
 Click the mouse icon in the menu bar:
 
+<p align="center"><img src="assets/menu.png" width="304" alt="Muse menu with status line, Enabled, Settings, Launch at Login, Hide Menu Bar Icon and Quit Muse"></p>
+
 - **Status line**: shows whether the Magic Mouse is connected. If Muse is missing the
   Accessibility permission it says so, and clicking it opens the right Settings page.
 - **Enabled**: pause or resume Muse. While paused the icon is dimmed and the mouse behaves
@@ -47,8 +49,12 @@ Click the mouse icon in the menu bar:
 
 ## Settings
 
-Everything is in the Settings window. You can also use `defaults`; the change applies the next
-time you open the Muse menu or Settings window (or run `make restart`):
+Everything is in the Settings window:
+
+<p align="center"><img src="assets/settings.png" width="380" alt="Muse Settings window with cursor, mouse sensor and tap to click settings"></p>
+
+You can also use `defaults`; the change applies the next time you open the Muse menu or Settings
+window (or run `make restart`):
 
 | Key | Default | What it does |
 |---|---|---|
