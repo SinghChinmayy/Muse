@@ -38,4 +38,9 @@ public final class TouchSession {
         return ScrollGate.allow(fingers: mouseFingers, sessionMax: sessionMax, lastTwoFinger: lastTwoFinger,
                                 now: now, momentum: momentum, enabled: enabled)
     }
+
+    /// Whether a pointer move/drag event may pass. `synthetic` marks events Muse posted itself.
+    public func allowPointerMotion(synthetic: Bool, now: Double, settings: Settings) -> Bool {
+        true
+    }
 }

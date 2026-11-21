@@ -81,3 +81,11 @@ import Testing
         #expect(scroll(s, at: 10, enabled: false))
     }
 }
+
+extension TouchSessionTests {
+    static var opticalOff: Settings { var s = Settings(); s.opticalEnabled = false; return s }
+
+    @Test func opticalOffBlocksHardwarePointerMotion() {
+        #expect(!TouchSession().allowPointerMotion(synthetic: false, now: 10, settings: Self.opticalOff))
+    }
+}
