@@ -20,6 +20,12 @@ public struct Settings: Equatable {
     }
 
     public static func load(from d: UserDefaults) -> Settings {
-        Settings()
+        var s = Settings()
+        func b(_ k: String, _ v: inout Bool) { if let x = d.object(forKey: k) as? Bool { v = x } }
+        func n(_ k: String, _ v: inout Double) { if let x = d.object(forKey: k) as? Double { v = x } }
+        b("enabled", &s.enabled); b("cursorEnabled", &s.cursorEnabled)
+        n("cursorSpeed", &s.cursorSpeed); n("cursorAccel", &s.cursorAccel); n("deadzone", &s.deadzone)
+        b("invertX", &s.invertX); b("invertY", &s.invertY)
+        return s
     }
 }
