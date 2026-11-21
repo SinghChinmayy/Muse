@@ -34,18 +34,13 @@ var lastTwoFinger = 0.0       // last time >= 2 fingers on mouse
 var lastMouseTouch = 0.0
 var lastOtherTouch = 0.0      // trackpad etc.
 
-// ---- One-finger trackpad-style cursor ----
-// Tune with: defaults write io.github.singhchinmayy.Muse <key> <value>; then restart the agent.
-let prefs = UserDefaults.standard  // domain = bundle id io.github.singhchinmayy.Muse
-let cursorEnabled = prefs.object(forKey: "cursorEnabled") as? Bool ?? true
-let cursorSpeed = prefs.object(forKey: "cursorSpeed") as? Double ?? 1.0
-let cursorAccel = prefs.object(forKey: "cursorAccel") as? Double ?? 1.0
-let invertX = prefs.bool(forKey: "invertX")
-let invertY = prefs.bool(forKey: "invertY")
-let deadzone = prefs.object(forKey: "deadzone") as? Double ?? 0.03   // normalized surface units before cursor starts moving
+// ---- Settings ----
+// Live copy of the prefs in defaults (domain io.github.singhchinmayy.Muse). The menu bar and
+// Settings window edit them through SettingsModel, which calls applySettings.
+var settings = Settings.load(from: .standard)   // guarded by `lock`
+func applySettings(_ s: Settings) { lock.lock(); settings = s; lock.unlock() }
 
-let cursorSettings = Settings(enabled: true, cursorEnabled: cursorEnabled, cursorSpeed: cursorSpeed,
-                              cursorAccel: cursorAccel, deadzone: deadzone, invertX: invertX, invertY: invertY)
+// ---- One-finger trackpad-style cursor ----
 let cursor = CursorTracker()
 
 func displayBounds() -> CGRect {
@@ -69,9 +64,9 @@ func moveCursor(dx: Double, dy: Double) {
     e.post(tap: .cghidEventTap)
 }
 
-// Called with the single touching finger (or nil). Runs on the multitouch thread.
+// Called with the single touching finger (or nil). Runs on the multitouch thread, holding `lock`.
 func handleOneFinger(id: Int32?, x: Double, y: Double) {
-    guard let (dx, dy) = cursor.update(id: id, x: x, y: y, settings: cursorSettings) else { return }
+    guard let (dx, dy) = cursor.update(id: id, x: x, y: y, settings: settings) else { return }
     if debug { log("cursor dx=\(dx) dy=\(dy)") }
     moveCursor(dx: dx, dy: dy)
 }
@@ -152,12 +147,13 @@ let tapCallback: CGEventTapCallBack = { _, type, event, _ in
     let now = CFAbsoluteTimeGetCurrent()
     let momentum = event.getIntegerValueField(.scrollWheelEventMomentumPhase) != 0
     lock.lock()
-    let fingers = mouseFingers, smax = sessionMax, l2 = lastTwoFinger
+    let fingers = mouseFingers, smax = sessionMax, l2 = lastTwoFinger, enabled = settings.enabled
     let mouseIsSource = lastMouseTouch >= lastOtherTouch && (fingers > 0 || momentum || now - lastMouseTouch < 1.0)
     lock.unlock()
     guard mouseIsSource else { return Unmanaged.passUnretained(event) }
 
-    let allow = ScrollGate.allow(fingers: fingers, sessionMax: smax, lastTwoFinger: l2, now: now, momentum: momentum)
+    let allow = ScrollGate.allow(fingers: fingers, sessionMax: smax, lastTwoFinger: l2, now: now, momentum: momentum,
+                                 enabled: enabled)
     if debug && !allow { log("blocked scroll (fingers=\(fingers) momentum=\(momentum))") }
     return allow ? Unmanaged.passUnretained(event) : nil
 }
