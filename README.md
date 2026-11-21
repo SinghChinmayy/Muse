@@ -6,7 +6,9 @@
 
 - **One finger slides the cursor**, like on a trackpad, so you don't have to move the mouse.
 - **Two fingers scroll.** Scrolling with one finger is turned off.
-- Moving the mouse still moves the cursor as usual. Trackpads and normal scroll-wheel mice aren't affected.
+- **Tap to click** (optional): a quick one-finger tap is a left click.
+- Moving the mouse still moves the cursor as usual, unless you turn off **Move cursor with mouse
+  sensor**. Trackpads and normal scroll-wheel mice aren't affected.
 
 Muse lives in the menu bar and doesn't use the network.
 
@@ -56,6 +58,8 @@ time you open the Muse menu or Settings window (or run `make restart`):
 | `cursorAccel` | `1.0` | Extra speed for fast swipes (`0` = none) |
 | `deadzone` | `0.03` | How far a finger has to slide before the cursor moves (stops jitter when clicking) |
 | `invertX` / `invertY` | `false` | Flip a direction |
+| `opticalEnabled` | `true` | Sliding the mouse on the desk moves the cursor. Off: only the touch surface (and the trackpad) move it |
+| `tapToClick` | `false` | A quick one-finger tap on the surface is a left click; two quick taps are a double click |
 | `showMenuBarIcon` | `true` | Show the menu bar icon |
 
 ```sh
@@ -86,19 +90,23 @@ Muse reads raw touches from the Magic Mouse through Apple's private `MultitouchS
 - With **one finger** on the surface, it turns the finger's movement into cursor movement and drops
   the scroll events macOS would normally send.
 - With **two or more fingers**, it lets scrolling (and momentum) through.
+- A **quick one-finger tap** (short, barely moving, no real button press) becomes a left click.
+- With the **mouse sensor off**, it drops pointer movement it didn't make itself and puts the cursor
+  back. macOS doesn't say which device moved, so movement passes only while a finger is on the
+  trackpad; a plain USB or Bluetooth mouse is blocked too while this is off.
 
 Because it uses a private framework, a future macOS update could break it.
 
 The code is a Swift package. `Sources/MuseCore` holds all the logic (touch frame parsing, finger
-tracking, the scroll filter, cursor math and placement, device detection, settings, login item,
+tracking, the scroll filter, tap detection, cursor math and placement, device detection, settings, login item,
 menu status) and is fully covered by `make test`. `Sources/Muse` is the app: the
 multitouch and event-tap glue in `main.swift`, the menu in `MenuBar.swift` and the Settings window
 in `SettingsWindow.swift`.
 
 ## Works with
 
-Gesture apps such as [MagicMousePad](https://github.com/rzrizaldy/MagicMousePad) can add tap-to-click
-and swipes alongside Muse. If a two-finger sideways swipe triggers back/forward while you scroll,
+Gesture apps such as [MagicMousePad](https://github.com/rzrizaldy/MagicMousePad) can add swipes
+alongside Muse (turn off their tap-to-click if you use Muse's, or a tap clicks twice). If a two-finger sideways swipe triggers back/forward while you scroll,
 turn that swipe off in the other app.
 
 ## License
