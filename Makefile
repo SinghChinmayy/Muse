@@ -44,10 +44,12 @@ app: $(BUILD)/$(APP_NAME) $(BUILD)/AppIcon.icns Resources/Info.plist Resources/l
 
 install: app
 	-launchctl bootout gui/$(USER_ID)/$(BUNDLE_ID) 2>/dev/null
+	@# bootout returns before the old job is gone; bootstrapping too early fails with "5: Input/output error".
+	@for i in $$(seq 50); do launchctl print gui/$(USER_ID)/$(BUNDLE_ID) >/dev/null 2>&1 || break; sleep 0.1; done
 	@mkdir -p $(INSTALL_DIR) && rm -rf $(INSTALL_DIR)/$(APP_NAME).app
 	cp -R $(APP) $(INSTALL_DIR)/
 	sed -e 's|__APP__|$(INSTALL_DIR)/$(APP_NAME).app|' -e 's|__LOG__|$(LOG)|' Resources/launchagent.plist > $(AGENT)
-	launchctl bootstrap gui/$(USER_ID) $(AGENT)
+	launchctl bootstrap gui/$(USER_ID) $(AGENT) || (sleep 1 && launchctl bootstrap gui/$(USER_ID) $(AGENT))
 	@echo "Installed. Turn on Muse in System Settings > Privacy & Security > Accessibility."
 	@open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 
