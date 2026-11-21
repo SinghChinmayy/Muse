@@ -69,6 +69,7 @@ defaults write io.github.singhchinmayy.Muse invertY -bool true
 |---|---|
 | `make` | Build `build/Muse.app` |
 | `make test` | Run the unit tests |
+| `make coverage` | Run the unit tests and print coverage |
 | `make install` | Build, install to `~/Applications` and start at login |
 | `make uninstall` | Remove the app, the login item and the Accessibility entry |
 | `make restart` | Restart Muse |
@@ -88,8 +89,9 @@ Muse reads raw touches from the Magic Mouse through Apple's private `MultitouchS
 
 Because it uses a private framework, a future macOS update could break it.
 
-The code is a Swift package. `Sources/MuseCore` holds the logic (settings, scroll gate, cursor
-math, login item, menu status) and is covered by `make test`. `Sources/Muse` is the app: the
+The code is a Swift package. `Sources/MuseCore` holds all the logic (touch frame parsing, finger
+tracking, the scroll filter, cursor math and placement, device detection, settings, login item,
+menu status) and is fully covered by `make test`. `Sources/Muse` is the app: the
 multitouch and event-tap glue in `main.swift`, the menu in `MenuBar.swift` and the Settings window
 in `SettingsWindow.swift`.
 

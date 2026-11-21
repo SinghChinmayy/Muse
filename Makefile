@@ -7,7 +7,7 @@ AGENT     := $(HOME)/Library/LaunchAgents/$(BUNDLE_ID).plist
 LOG       := $(HOME)/Library/Logs/$(APP_NAME).log
 USER_ID   := $(shell id -u)
 
-.PHONY: all app test install uninstall restart logs probe clean
+.PHONY: all app test coverage install uninstall restart logs probe clean
 
 all: app
 
@@ -20,6 +20,11 @@ $(BUILD)/$(APP_NAME): $(SOURCES)
 
 test:
 	swift test
+
+coverage:
+	swift test --enable-code-coverage
+	xcrun llvm-cov report "$$(swift build --show-bin-path)/MuseCoreTests.xctest/Contents/MacOS/MuseCoreTests" \
+		-instr-profile "$$(swift build --show-bin-path)/codecov/default.profdata" -ignore-filename-regex='Tests/|\.build/'
 
 $(BUILD)/AppIcon.icns: assets/logo.png
 	@rm -rf $(BUILD)/AppIcon.iconset && mkdir -p $(BUILD)/AppIcon.iconset

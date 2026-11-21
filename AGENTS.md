@@ -3,11 +3,13 @@
 macOS background app that makes the Magic Mouse surface work like a trackpad:
 one finger moves the cursor, two fingers scroll, one-finger scrolling is blocked.
 
-- Swift package. `Sources/MuseCore`: pure, unit-tested logic (`Settings`, `ScrollGate`,
-  `CursorTracker`, `LoginAgent`, `Status`, `SettingsModel`). `Sources/Muse`: the app.
+- Swift package. `Sources/MuseCore`: pure, unit-tested logic (`TouchFrame`, `TouchSession`,
+  `ScrollGate`, `CursorTracker`, `CursorPlacement`, `DeviceRegistry`, `LaunchOptions`, `Settings`,
+  `SettingsModel`, `LoginAgent`, `Status`). `Sources/Muse`: the app.
   `main.swift` is the engine (private `MultitouchSupport` framework + a `CGEventTap` on scroll
   events), `MenuBar.swift` the menu bar, `SettingsWindow.swift` the SwiftUI Settings window.
-- Tests: `make test` (Swift Testing, `Tests/MuseCoreTests`). Build new logic test-first in
+- Tests: `make test` (Swift Testing, `Tests/MuseCoreTests`); `make coverage` must stay at 100%
+  for MuseCore. Build new logic test-first in
   MuseCore; keep AppKit glue in `Sources/Muse` thin.
 - Build and install with the `Makefile` (`make install`). Bundle ID, defaults domain and
   LaunchAgent label are all `io.github.singhchinmayy.Muse`.
