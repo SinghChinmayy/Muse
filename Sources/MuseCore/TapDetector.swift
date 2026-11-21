@@ -17,7 +17,7 @@ public final class TapDetector {
     public func frame(touches: [Touch], now: Double, settings: Settings) -> Int? {
         if let t = touches.first {
             if !down { down = true; start = now; startPos = (t.x, t.y); spoiled = false }
-            if hypot(t.x - startPos.x, t.y - startPos.y) > Self.slop { spoiled = true }
+            if touches.count > 1 || hypot(t.x - startPos.x, t.y - startPos.y) > Self.slop { spoiled = true }
             return nil
         }
         guard down else { return nil }
