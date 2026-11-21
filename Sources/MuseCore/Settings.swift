@@ -29,6 +29,7 @@ public struct Settings: Equatable {
         b("enabled", &s.enabled); b("cursorEnabled", &s.cursorEnabled)
         n("cursorSpeed", &s.cursorSpeed); n("cursorAccel", &s.cursorAccel); n("deadzone", &s.deadzone)
         b("invertX", &s.invertX); b("invertY", &s.invertY); b("tapToClick", &s.tapToClick)
+        b("opticalEnabled", &s.opticalEnabled)
         return s
     }
 
@@ -39,10 +40,10 @@ public struct Settings: Equatable {
         put("enabled", enabled, f.enabled); put("cursorEnabled", cursorEnabled, f.cursorEnabled)
         put("cursorSpeed", cursorSpeed, f.cursorSpeed); put("cursorAccel", cursorAccel, f.cursorAccel)
         put("deadzone", deadzone, f.deadzone); put("invertX", invertX, f.invertX); put("invertY", invertY, f.invertY)
-        put("tapToClick", tapToClick, f.tapToClick)
+        put("tapToClick", tapToClick, f.tapToClick); put("opticalEnabled", opticalEnabled, f.opticalEnabled)
     }
 
-    public static let keys = ["enabled", "cursorEnabled", "cursorSpeed", "cursorAccel", "deadzone", "invertX", "invertY", "tapToClick"]
+    public static let keys = ["enabled", "cursorEnabled", "cursorSpeed", "cursorAccel", "deadzone", "invertX", "invertY", "tapToClick", "opticalEnabled"]
 
     /// Back to factory values. Leaves non-setting prefs (e.g. showMenuBarIcon) alone.
     public static func reset(_ d: UserDefaults) { keys.forEach(d.removeObject(forKey:)) }
