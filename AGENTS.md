@@ -19,3 +19,5 @@ one finger moves the cursor, two fingers scroll, one-finger scrolling is blocked
   `Sources/MuseCore/Settings.swift` (plus `showMenuBarIcon` in `MenuBar.swift`).
 - `Resources/launchagent.plist` is one template used twice: `make install` fills it with sed,
   and the Launch at Login toggle fills it from the copy inside the app bundle.
+- `site/` is the static landing page for muse.chinmaysingh.me (Cloudflare Pages project `muse`,
+  deployed with `make site-deploy`). Keep its claims in sync with `README.md`.

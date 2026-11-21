@@ -4,6 +4,8 @@
 
 <p align="center">Use your Magic Mouse like a tiny trackpad on macOS.</p>
 
+<p align="center"><a href="https://muse.chinmaysingh.me">muse.chinmaysingh.me</a></p>
+
 - **One finger slides the cursor**, like on a trackpad, so you don't have to move the mouse.
 - **Two fingers scroll.** Scrolling with one finger is turned off.
 - **Tap to click** (optional): a quick one-finger tap is a left click.
@@ -85,6 +87,7 @@ defaults write io.github.singhchinmayy.Muse invertY -bool true
 | `make restart` | Restart Muse |
 | `make logs` | Follow `~/Library/Logs/Muse.log` |
 | `make probe` | List touch devices and show which one is the Magic Mouse |
+| `make site-deploy` | Publish the landing page in `site/` to muse.chinmaysingh.me (Cloudflare Pages, needs `wrangler login`) |
 
 To debug, stop the login item with `launchctl bootout gui/$(id -u)/io.github.singhchinmayy.Muse`, then run
 `~/Applications/Muse.app/Contents/MacOS/Muse --debug`. It prints finger counts, cursor moves and blocked scrolls.
