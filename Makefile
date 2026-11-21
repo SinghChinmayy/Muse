@@ -29,11 +29,12 @@ $(BUILD)/AppIcon.icns: assets/logo.png
 	done
 	iconutil -c icns $(BUILD)/AppIcon.iconset -o $@
 
-app: $(BUILD)/$(APP_NAME) $(BUILD)/AppIcon.icns Resources/Info.plist
+app: $(BUILD)/$(APP_NAME) $(BUILD)/AppIcon.icns Resources/Info.plist Resources/launchagent.plist
 	@rm -rf $(APP) && mkdir -p $(APP)/Contents/MacOS $(APP)/Contents/Resources
 	cp $(BUILD)/$(APP_NAME) $(APP)/Contents/MacOS/
 	cp Resources/Info.plist $(APP)/Contents/
 	cp $(BUILD)/AppIcon.icns $(APP)/Contents/Resources/
+	cp Resources/launchagent.plist $(APP)/Contents/Resources/   # template for the Launch at Login toggle
 	codesign --force --sign - --identifier $(BUNDLE_ID) $(APP)
 
 install: app

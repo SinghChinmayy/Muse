@@ -1,5 +1,6 @@
 // Muse: turns the Magic Mouse surface into a mini trackpad.
 // One finger slides the cursor, two fingers scroll; one-finger scrolling is blocked.
+// This file is the engine (multitouch + scroll event tap); the menu bar lives in MenuBar.swift.
 // Usage: Muse [--probe] [--debug]
 import Cocoa
 import CoreGraphics
@@ -128,6 +129,16 @@ func scanDevices() {
     }
 }
 
+// Fresh check for the menu's status line (the scan list keeps stale devices until wake).
+func magicMouseConnected() -> Bool {
+    let list = MTDeviceCreateList().takeRetainedValue() as [AnyObject]
+    return list.contains { obj in
+        var fam: Int32 = 0
+        _ = MTDeviceGetFamilyID(Unmanaged.passUnretained(obj).toOpaque(), &fam)
+        return mouseFamilies.contains(fam)
+    }
+}
+
 if args.contains("--probe") {
     scanDevices()
     exit(0)
@@ -186,4 +197,7 @@ NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNo
     lock.lock(); knownDeviceIDs.removeAll(); mouseDevices.removeAll(); lock.unlock()
     scanDevices()
 }
-RunLoop.main.run()
+let app = NSApplication.shared
+let appDelegate = AppDelegate()
+app.delegate = appDelegate
+app.run()
