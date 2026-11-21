@@ -7,7 +7,7 @@ AGENT     := $(HOME)/Library/LaunchAgents/$(BUNDLE_ID).plist
 LOG       := $(HOME)/Library/Logs/$(APP_NAME).log
 USER_ID   := $(shell id -u)
 
-.PHONY: all app test coverage install uninstall restart logs probe clean
+.PHONY: all app test coverage install uninstall restart logs probe site-deploy clean
 
 all: app
 
@@ -67,6 +67,9 @@ logs:
 
 probe: $(BUILD)/$(APP_NAME)
 	$(BUILD)/$(APP_NAME) --probe
+
+site-deploy:
+	wrangler pages deploy site --project-name muse --branch main
 
 clean:
 	rm -rf $(BUILD) .build
