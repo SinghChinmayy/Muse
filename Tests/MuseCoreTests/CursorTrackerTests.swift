@@ -32,3 +32,10 @@ import Testing
         #expect(slide(to: (0.6, 0.5), s) == nil)
     }
 }
+
+extension CursorTrackerTests {
+    @Test func pausedMuseDoesNotMoveCursor() {
+        var s = Settings(); s.enabled = false
+        #expect(slide(to: (0.6, 0.5), s) == nil)
+    }
+}
