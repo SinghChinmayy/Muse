@@ -26,5 +26,5 @@ public final class TapDetector {
     }
 
     /// A real mouse button went down.
-    public func buttonPressed() {}
+    public func buttonPressed() { spoiled = true }
 }
