@@ -23,4 +23,6 @@ public final class SettingsModel: ObservableObject {
         reloading = true; defer { reloading = false }
         settings = Settings.load(from: defaults)
     }
+
+    public func reset() {}
 }

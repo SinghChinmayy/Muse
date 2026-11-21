@@ -26,3 +26,16 @@ extension SettingsModelTests {
         #expect(d.object(forKey: "cursorSpeed") as? String == "1.5")
     }
 }
+
+extension SettingsModelTests {
+    @Test func resetRestoresFactoryValuesAndAppliesThem() {
+        let d = freshDefaults(), engine = Engine()
+        let m = SettingsModel(defaults: d) { engine.applied.append($0) }
+        m.settings.cursorSpeed = 2.5; m.settings.invertY = true
+        m.reset()
+        #expect(m.settings == Settings())
+        #expect(engine.applied.last == Settings())
+        #expect(d.object(forKey: "cursorSpeed") == nil)
+        #expect(d.object(forKey: "invertY") == nil)
+    }
+}
