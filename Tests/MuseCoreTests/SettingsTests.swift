@@ -59,3 +59,25 @@ extension SettingsTests {
         #expect(d.object(forKey: "showMenuBarIcon") as? Bool == false)
     }
 }
+
+extension SettingsTests {
+    @Test func tapToClickIsOffByDefaultAndPersists() {
+        let d = freshDefaults()
+        #expect(Settings.load(from: d).tapToClick == false)
+        var s = Settings(); s.tapToClick = true
+        s.save(to: d)
+        #expect(Settings.load(from: d).tapToClick == true)
+        #expect(Settings.keys.contains("tapToClick"))
+    }
+}
+
+extension SettingsTests {
+    @Test func opticalSensorIsOnByDefaultAndPersists() {
+        let d = freshDefaults()
+        #expect(Settings.load(from: d).opticalEnabled == true)
+        var s = Settings(); s.opticalEnabled = false
+        s.save(to: d)
+        #expect(Settings.load(from: d).opticalEnabled == false)
+        #expect(Settings.keys.contains("opticalEnabled"))
+    }
+}

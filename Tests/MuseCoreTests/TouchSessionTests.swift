@@ -81,3 +81,34 @@ import Testing
         #expect(scroll(s, at: 10, enabled: false))
     }
 }
+
+extension TouchSessionTests {
+    static var opticalOff: Settings { var s = Settings(); s.opticalEnabled = false; return s }
+
+    @Test func opticalOffBlocksHardwarePointerMotion() {
+        #expect(!TouchSession().allowPointerMotion(synthetic: false, now: 10, settings: Self.opticalOff))
+    }
+}
+
+extension TouchSessionTests {
+    @Test func musesOwnCursorMovesPassWithOpticalOff() {
+        #expect(TouchSession().allowPointerMotion(synthetic: true, now: 10, settings: Self.opticalOff))
+    }
+}
+
+extension TouchSessionTests {
+    // CGEvents do not say which device moved; a finger on the trackpad means the trackpad did.
+    @Test func trackpadMotionPassesWithOpticalOff() {
+        let s = TouchSession()
+        s.otherFrame(fingers: 1, now: 10)
+        #expect(s.allowPointerMotion(synthetic: false, now: 10.05, settings: Self.opticalOff))
+        #expect(!s.allowPointerMotion(synthetic: false, now: 10.5, settings: Self.opticalOff))
+    }
+}
+
+extension TouchSessionTests {
+    @Test func pausedMuseLetsOpticalMotionThrough() {
+        var s = Self.opticalOff; s.enabled = false
+        #expect(TouchSession().allowPointerMotion(synthetic: false, now: 10, settings: s))
+    }
+}
