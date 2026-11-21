@@ -7,13 +7,19 @@ AGENT     := $(HOME)/Library/LaunchAgents/$(BUNDLE_ID).plist
 LOG       := $(HOME)/Library/Logs/$(APP_NAME).log
 USER_ID   := $(shell id -u)
 
-.PHONY: all app install uninstall restart logs probe clean
+.PHONY: all app test install uninstall restart logs probe clean
 
 all: app
 
-$(BUILD)/$(APP_NAME): Sources/main.swift
+SOURCES   := Package.swift $(shell find Sources -name '*.swift')
+
+$(BUILD)/$(APP_NAME): $(SOURCES)
 	@mkdir -p $(BUILD)
-	swiftc -O -swift-version 5 Sources/main.swift -o $@
+	swift build -c release --product $(APP_NAME)
+	cp "$$(swift build -c release --show-bin-path)/$(APP_NAME)" $@
+
+test:
+	swift test
 
 $(BUILD)/AppIcon.icns: assets/logo.png
 	@rm -rf $(BUILD)/AppIcon.iconset && mkdir -p $(BUILD)/AppIcon.iconset
@@ -55,4 +61,4 @@ probe: $(BUILD)/$(APP_NAME)
 	$(BUILD)/$(APP_NAME) --probe
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) .build
