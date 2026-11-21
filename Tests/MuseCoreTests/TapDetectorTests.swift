@@ -38,3 +38,13 @@ extension TapDetectorTests {
         #expect(t.frame(touches: [], now: 10.1, settings: s) == nil)
     }
 }
+
+extension TapDetectorTests {
+    // A quick physical click also touches the surface; it must not become a second click.
+    @Test func physicalClickDuringTouchDoesNotAlsoTapClick() {
+        let t = TapDetector(), s = Self.on
+        _ = t.frame(touches: [Touch(id: 1, x: 0.5, y: 0.5)], now: 10, settings: s)
+        t.buttonPressed()
+        #expect(t.frame(touches: [], now: 10.1, settings: s) == nil)
+    }
+}

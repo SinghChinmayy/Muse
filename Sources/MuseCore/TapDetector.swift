@@ -24,4 +24,7 @@ public final class TapDetector {
         down = false
         return !spoiled && now - start <= Self.maxDuration ? 1 : nil
     }
+
+    /// A real mouse button went down.
+    public func buttonPressed() {}
 }
