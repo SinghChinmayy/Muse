@@ -4,6 +4,7 @@
 import Cocoa
 import CoreGraphics
 import ApplicationServices
+import MuseCore
 
 typealias MTDeviceRef = UnsafeMutableRawPointer
 typealias MTCallback = @convention(c) (MTDeviceRef?, UnsafeMutableRawPointer?, Int32, Double, Int32) -> Int32
@@ -178,12 +179,7 @@ let tapCallback: CGEventTapCallBack = { _, type, event, _ in
     lock.unlock()
     guard mouseIsSource else { return Unmanaged.passUnretained(event) }
 
-    let allow: Bool
-    if fingers > 0 && !momentum {
-        allow = fingers >= 2 || now - l2 < 0.25   // tolerate a finger briefly lifting
-    } else {
-        allow = smax >= 2                          // momentum after lift-off
-    }
+    let allow = ScrollGate.allow(fingers: fingers, sessionMax: smax, lastTwoFinger: l2, now: now, momentum: momentum)
     if debug && !allow { log("blocked scroll (fingers=\(fingers) momentum=\(momentum))") }
     return allow ? Unmanaged.passUnretained(event) : nil
 }
