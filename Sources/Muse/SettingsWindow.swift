@@ -42,6 +42,12 @@ struct SettingsView: View {
                     Toggle("Invert vertical", isOn: $model.settings.invertY)
                 }
                 .disabled(!model.settings.cursorEnabled)
+                Toggle("Move cursor with mouse sensor", isOn: $model.settings.opticalEnabled)
+                    .help("Off: sliding the mouse on the desk no longer moves the cursor. The trackpad still works.")
+            }
+            .disabled(!model.settings.enabled)
+            Section("Clicking") {
+                Toggle("Tap to click", isOn: $model.settings.tapToClick)
             }
             .disabled(!model.settings.enabled)
             Section {

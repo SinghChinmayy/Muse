@@ -33,8 +33,11 @@ let session = TouchSession()
 var settings = Settings.load(from: .standard)   // guarded by `lock`
 func applySettings(_ s: Settings) { lock.lock(); settings = s; lock.unlock() }
 
-// ---- One-finger trackpad-style cursor ----
+// ---- One-finger trackpad-style cursor, tap to click ----
 let cursor = CursorTracker()
+let tapper = TapDetector(doubleClickInterval: NSEvent.doubleClickInterval)
+// Tags events Muse posts so the event tap can tell them from hardware.
+let museEventTag: Int64 = 0x4D757365   // "Muse"
 
 func displayBounds() -> CGRect {
     var ids = [CGDirectDisplayID](repeating: 0, count: 16)
@@ -52,7 +55,19 @@ func moveCursor(dx: Double, dy: Double) {
                           mouseButton: kind.button) else { return }
     e.setIntegerValueField(.mouseEventDeltaX, value: Int64(dx.rounded()))
     e.setIntegerValueField(.mouseEventDeltaY, value: Int64(dy.rounded()))
+    e.setIntegerValueField(.eventSourceUserData, value: museEventTag)
     e.post(tap: .cghidEventTap)
+}
+
+func click(count: Int) {
+    guard let loc = CGEvent(source: nil)?.location else { return }
+    for type in [CGEventType.leftMouseDown, .leftMouseUp] {
+        guard let e = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: loc,
+                              mouseButton: .left) else { continue }
+        e.setIntegerValueField(.mouseEventClickState, value: Int64(count))
+        e.setIntegerValueField(.eventSourceUserData, value: museEventTag)
+        e.post(tap: .cghidEventTap)
+    }
 }
 
 // Called with the single touching finger (or nil). Runs on the multitouch thread, holding `lock`.
@@ -74,6 +89,10 @@ let touchCallback: MTCallback = { dev, touches, n, _, _ in
         if debug && count != session.mouseFingers { log("mouse fingers: \(count)") }
         let cursorAllowed = session.mouseFrame(fingers: count, now: now)
         handleOneFinger(id: cursorAllowed ? oneID : nil, x: oneX, y: oneY)
+        if let n = tapper.frame(touches: active, now: now, settings: settings) {
+            if debug { log("tap click x\(n)") }
+            click(count: n)
+        }
     } else {
         session.otherFrame(fingers: count, now: now)
     }
@@ -116,11 +135,32 @@ if options.probe {
 }
 
 var gTap: CFMachPort?
+// Where the cursor was after the last move we let through (main thread only).
+var lastCursor = CGEvent(source: nil)?.location ?? .zero
+
+let buttonDowns: Set<CGEventType> = [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+let motions: Set<CGEventType> = [.mouseMoved, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged]
 
 let tapCallback: CGEventTapCallBack = { _, type, event, _ in
     if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
         if let gTap { CGEvent.tapEnable(tap: gTap, enable: true) }
         return Unmanaged.passUnretained(event)
+    }
+    let synthetic = event.getIntegerValueField(.eventSourceUserData) == museEventTag
+    if buttonDowns.contains(type) {
+        if !synthetic { lock.lock(); tapper.buttonPressed(); lock.unlock() }   // a real click is not a tap
+        return Unmanaged.passUnretained(event)
+    }
+    if motions.contains(type) {
+        lock.lock()
+        let allow = session.allowPointerMotion(synthetic: synthetic, now: CFAbsoluteTimeGetCurrent(), settings: settings)
+        lock.unlock()
+        if allow { lastCursor = event.location; return Unmanaged.passUnretained(event) }
+        // The cursor has already moved by the time a tap sees the event: put it back.
+        CGWarpMouseCursorPosition(lastCursor)
+        CGAssociateMouseAndMouseCursorPosition(1)   // undo the brief freeze a warp causes
+        if debug { log("blocked optical move") }
+        return nil
     }
     guard type == .scrollWheel else { return Unmanaged.passUnretained(event) }
     let continuous = event.getIntegerValueField(.scrollWheelEventIsContinuous) != 0
@@ -135,7 +175,7 @@ let tapCallback: CGEventTapCallBack = { _, type, event, _ in
 }
 
 func startTap() -> Bool {
-    let mask = CGEventMask(1 << CGEventType.scrollWheel.rawValue)
+    let mask = ([.scrollWheel] + buttonDowns + motions).reduce(CGEventMask(0)) { $0 | 1 << $1.rawValue }
     guard let tap = CGEvent.tapCreate(tap: .cghidEventTap, place: .headInsertEventTap,
                                       options: .defaultTap, eventsOfInterest: mask,
                                       callback: tapCallback, userInfo: nil) else { return false }
