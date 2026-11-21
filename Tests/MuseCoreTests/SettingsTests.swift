@@ -19,3 +19,15 @@ extension SettingsTests {
                                                    cursorAccel: 0.0, deadzone: 0.05, invertX: true, invertY: true))
     }
 }
+
+extension SettingsTests {
+    // `defaults write <domain> cursorSpeed 1.5` (no -float) stores a string.
+    @Test func loadAcceptsValuesWrittenAsStrings() {
+        let d = freshDefaults()
+        d.set("1.5", forKey: "cursorSpeed"); d.set("0.05", forKey: "deadzone"); d.set("YES", forKey: "invertY")
+        let s = Settings.load(from: d)
+        #expect(s.cursorSpeed == 1.5)
+        #expect(s.deadzone == 0.05)
+        #expect(s.invertY == true)
+    }
+}
