@@ -1,3 +1,4 @@
+/// What the menu bar shows about Muse's state.
 public struct Status: Equatable {
     public var trusted: Bool
     public var mouseConnected: Bool
@@ -7,6 +8,12 @@ public struct Status: Equatable {
         self.trusted = trusted; self.mouseConnected = mouseConnected; self.enabled = enabled
     }
 
-    public var title: String { "" }
-    public var opensAccessibilitySettings: Bool { false }
+    /// Status line at the top of the menu. A missing permission matters most, so it wins.
+    public var title: String {
+        if !trusted { return "Needs Accessibility Permission" }
+        return mouseConnected ? "Magic Mouse Connected" : "No Magic Mouse Found"
+    }
+
+    /// Clicking the status line opens Privacy & Security > Accessibility.
+    public var opensAccessibilitySettings: Bool { !trusted }
 }
