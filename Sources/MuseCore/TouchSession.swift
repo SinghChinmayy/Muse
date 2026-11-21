@@ -41,6 +41,6 @@ public final class TouchSession {
 
     /// Whether a pointer move/drag event may pass. `synthetic` marks events Muse posted itself.
     public func allowPointerMotion(synthetic: Bool, now: Double, settings: Settings) -> Bool {
-        true
+        settings.opticalEnabled
     }
 }
