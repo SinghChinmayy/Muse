@@ -105,3 +105,10 @@ extension TouchSessionTests {
         #expect(!s.allowPointerMotion(synthetic: false, now: 10.5, settings: Self.opticalOff))
     }
 }
+
+extension TouchSessionTests {
+    @Test func pausedMuseLetsOpticalMotionThrough() {
+        var s = Self.opticalOff; s.enabled = false
+        #expect(TouchSession().allowPointerMotion(synthetic: false, now: 10, settings: s))
+    }
+}
