@@ -24,5 +24,8 @@ public final class SettingsModel: ObservableObject {
         settings = Settings.load(from: defaults)
     }
 
-    public func reset() {}
+    public func reset() {
+        Settings.reset(defaults)
+        reload()
+    }
 }
