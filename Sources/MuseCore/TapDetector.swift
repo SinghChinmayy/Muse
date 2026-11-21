@@ -25,7 +25,7 @@ public final class TapDetector {
         }
         guard down else { return nil }
         down = false
-        guard !spoiled && now - start <= Self.maxDuration else { return nil }
+        guard settings.enabled, settings.tapToClick, !spoiled, now - start <= Self.maxDuration else { return nil }
         clicks = now - lastTap <= doubleClickInterval ? clicks + 1 : 1
         lastTap = now
         return clicks
