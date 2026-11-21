@@ -30,5 +30,12 @@ public struct Settings: Equatable {
         return s
     }
 
-    public func save(to d: UserDefaults) {}
+    /// Writes only values that differ from the factory default, so `defaults read` shows what you changed.
+    public func save(to d: UserDefaults) {
+        let f = Settings()
+        func put<T: Equatable>(_ k: String, _ v: T, _ dv: T) { v == dv ? d.removeObject(forKey: k) : d.set(v, forKey: k) }
+        put("enabled", enabled, f.enabled); put("cursorEnabled", cursorEnabled, f.cursorEnabled)
+        put("cursorSpeed", cursorSpeed, f.cursorSpeed); put("cursorAccel", cursorAccel, f.cursorAccel)
+        put("deadzone", deadzone, f.deadzone); put("invertX", invertX, f.invertX); put("invertY", invertY, f.invertY)
+    }
 }
