@@ -59,3 +59,14 @@ extension SettingsTests {
         #expect(d.object(forKey: "showMenuBarIcon") as? Bool == false)
     }
 }
+
+extension SettingsTests {
+    @Test func tapToClickIsOffByDefaultAndPersists() {
+        let d = freshDefaults()
+        #expect(Settings.load(from: d).tapToClick == false)
+        var s = Settings(); s.tapToClick = true
+        s.save(to: d)
+        #expect(Settings.load(from: d).tapToClick == true)
+        #expect(Settings.keys.contains("tapToClick"))
+    }
+}

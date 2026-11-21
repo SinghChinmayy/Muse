@@ -9,6 +9,7 @@ public struct Settings: Equatable {
     public var deadzone = 0.03         // normalized surface units before the cursor starts moving
     public var invertX = false
     public var invertY = false
+    public var tapToClick = false
 
     public init() {}
 
