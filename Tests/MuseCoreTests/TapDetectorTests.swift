@@ -28,3 +28,13 @@ extension TapDetectorTests {
         #expect(tap(TapDetector(), at: 10, to: (0.6, 0.5)) == nil)
     }
 }
+
+extension TapDetectorTests {
+    @Test func twoFingerTouchDoesNotClick() {
+        let t = TapDetector(), s = Self.on
+        _ = t.frame(touches: [Touch(id: 1, x: 0.5, y: 0.5)], now: 10, settings: s)
+        _ = t.frame(touches: [Touch(id: 1, x: 0.5, y: 0.5), Touch(id: 2, x: 0.3, y: 0.5)], now: 10.05, settings: s)
+        _ = t.frame(touches: [Touch(id: 1, x: 0.5, y: 0.5)], now: 10.08, settings: s)
+        #expect(t.frame(touches: [], now: 10.1, settings: s) == nil)
+    }
+}
