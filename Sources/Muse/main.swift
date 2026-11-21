@@ -44,11 +44,9 @@ let invertX = prefs.bool(forKey: "invertX")
 let invertY = prefs.bool(forKey: "invertY")
 let deadzone = prefs.object(forKey: "deadzone") as? Double ?? 0.03   // normalized surface units before cursor starts moving
 
-var trackID: Int32 = -1               // touch path being followed
-var lastPos = (x: 0.0, y: 0.0)
-var startPos = (x: 0.0, y: 0.0)
-var tracking = false                  // passed the deadzone
-var remainder = (x: 0.0, y: 0.0)
+let cursorSettings = Settings(enabled: true, cursorEnabled: cursorEnabled, cursorSpeed: cursorSpeed,
+                              cursorAccel: cursorAccel, deadzone: deadzone, invertX: invertX, invertY: invertY)
+let cursor = CursorTracker()
 
 func displayBounds() -> CGRect {
     var ids = [CGDirectDisplayID](repeating: 0, count: 16)
@@ -73,29 +71,9 @@ func moveCursor(dx: Double, dy: Double) {
 
 // Called with the single touching finger (or nil). Runs on the multitouch thread.
 func handleOneFinger(id: Int32?, x: Double, y: Double) {
-    guard cursorEnabled, let id else { trackID = -1; tracking = false; return }
-    if id != trackID {                 // new finger (or 2 -> 1 transition): re-anchor, no jump
-        trackID = id; lastPos = (x, y); startPos = (x, y); tracking = false; remainder = (0, 0)
-        return
-    }
-    if !tracking {
-        if hypot(x - startPos.x, y - startPos.y) < deadzone { lastPos = (x, y); return }
-        tracking = true
-    }
-    var dx = x - lastPos.x, dy = y - lastPos.y
-    lastPos = (x, y)
-    // Surface is ~10x15 sensor cells; scale y so both axes feel equal.
-    let speed = hypot(dx, dy * 1.5)
-    let gain = 900.0 * cursorSpeed * (1 + cursorAccel * min(speed * 60, 3))
-    dx *= gain * (invertX ? -1 : 1)
-    dy *= gain * 1.5 * (invertY ? 1 : -1)   // surface y grows upward, screen y grows downward
-    dx += remainder.x; dy += remainder.y
-    let ix = dx.rounded(.towardZero), iy = dy.rounded(.towardZero)
-    remainder = (dx - ix, dy - iy)
-    if ix != 0 || iy != 0 {
-        if debug { log("cursor dx=\(ix) dy=\(iy)") }
-        moveCursor(dx: ix, dy: iy)
-    }
+    guard let (dx, dy) = cursor.update(id: id, x: x, y: y, settings: cursorSettings) else { return }
+    if debug { log("cursor dx=\(dx) dy=\(dy)") }
+    moveCursor(dx: dx, dy: dy)
 }
 
 let touchCallback: MTCallback = { dev, touches, n, _, _ in
