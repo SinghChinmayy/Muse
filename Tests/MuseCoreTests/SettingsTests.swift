@@ -8,3 +8,14 @@ import Testing
                               deadzone: 0.03, invertX: false, invertY: false))
     }
 }
+
+extension SettingsTests {
+    @Test func loadReadsStoredValues() {
+        let d = freshDefaults()
+        d.set(false, forKey: "enabled"); d.set(false, forKey: "cursorEnabled")
+        d.set(2.5, forKey: "cursorSpeed"); d.set(0.0, forKey: "cursorAccel")
+        d.set(0.05, forKey: "deadzone"); d.set(true, forKey: "invertX"); d.set(true, forKey: "invertY")
+        #expect(Settings.load(from: d) == Settings(enabled: false, cursorEnabled: false, cursorSpeed: 2.5,
+                                                   cursorAccel: 0.0, deadzone: 0.05, invertX: true, invertY: true))
+    }
+}
