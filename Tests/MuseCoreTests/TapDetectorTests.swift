@@ -57,3 +57,11 @@ extension TapDetectorTests {
         #expect(tap(t, at: 12) == 1)      // too late: a fresh single click
     }
 }
+
+extension TapDetectorTests {
+    @Test func tapDoesNothingWhenTapToClickIsOffOrMuseIsPaused() {
+        #expect(tap(TapDetector(), at: 10, settings: Settings()) == nil)
+        var paused = Self.on; paused.enabled = false
+        #expect(tap(TapDetector(), at: 10, settings: paused) == nil)
+    }
+}
