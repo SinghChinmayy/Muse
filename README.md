@@ -8,7 +8,7 @@
 - **Two fingers scroll.** Scrolling with one finger is turned off.
 - Moving the mouse still moves the cursor as usual. Trackpads and normal scroll-wheel mice aren't affected.
 
-Muse runs in the background with no window or menu bar icon, and it doesn't use the network.
+Muse lives in the menu bar and doesn't use the network.
 
 ## Install
 
@@ -27,22 +27,40 @@ within a couple of seconds.
 Each build gets a new ad-hoc signature, so after you reinstall you may need to turn Muse off and
 on again in Accessibility.
 
+## Menu bar
+
+Click the mouse icon in the menu bar:
+
+- **Status line**: shows whether the Magic Mouse is connected. If Muse is missing the
+  Accessibility permission it says so, and clicking it opens the right Settings page.
+- **Enabled**: pause or resume Muse. While paused the icon is dimmed and the mouse behaves
+  like normal.
+- **Settings…**: a small window with every setting below. Changes apply as you drag, and the
+  window stays on top so you can try the mouse while tuning.
+- **Launch at Login**: start Muse when you log in. Turning it off keeps Muse running until you
+  log out or quit.
+- **Hide Menu Bar Icon**: Muse keeps running without an icon. To bring it back, open Muse again
+  from Spotlight or Finder; that also opens Settings.
+- **Quit Muse**: stops Muse until the next login (or until you open it again).
+
 ## Settings
 
-Change settings with `defaults`, then run `make restart`:
+Everything is in the Settings window. You can also use `defaults`; the change applies the next
+time you open the Muse menu or Settings window (or run `make restart`):
 
 | Key | Default | What it does |
 |---|---|---|
+| `enabled` | `true` | Muse on or off (same as **Enabled** in the menu) |
 | `cursorEnabled` | `true` | One-finger cursor movement on or off |
 | `cursorSpeed` | `1.0` | Cursor speed |
 | `cursorAccel` | `1.0` | Extra speed for fast swipes (`0` = none) |
 | `deadzone` | `0.03` | How far a finger has to slide before the cursor moves (stops jitter when clicking) |
 | `invertX` / `invertY` | `false` | Flip a direction |
+| `showMenuBarIcon` | `true` | Show the menu bar icon |
 
 ```sh
 defaults write io.github.singhchinmayy.Muse cursorSpeed 1.5
 defaults write io.github.singhchinmayy.Muse invertY -bool true
-make restart
 ```
 
 ## Commands
@@ -50,9 +68,11 @@ make restart
 | Command | What it does |
 |---|---|
 | `make` | Build `build/Muse.app` |
+| `make test` | Run the unit tests |
+| `make coverage` | Run the unit tests and print coverage |
 | `make install` | Build, install to `~/Applications` and start at login |
 | `make uninstall` | Remove the app, the login item and the Accessibility entry |
-| `make restart` | Restart Muse (after changing a setting) |
+| `make restart` | Restart Muse |
 | `make logs` | Follow `~/Library/Logs/Muse.log` |
 | `make probe` | List touch devices and show which one is the Magic Mouse |
 
@@ -68,6 +88,12 @@ Muse reads raw touches from the Magic Mouse through Apple's private `MultitouchS
 - With **two or more fingers**, it lets scrolling (and momentum) through.
 
 Because it uses a private framework, a future macOS update could break it.
+
+The code is a Swift package. `Sources/MuseCore` holds all the logic (touch frame parsing, finger
+tracking, the scroll filter, cursor math and placement, device detection, settings, login item,
+menu status) and is fully covered by `make test`. `Sources/Muse` is the app: the
+multitouch and event-tap glue in `main.swift`, the menu in `MenuBar.swift` and the Settings window
+in `SettingsWindow.swift`.
 
 ## Works with
 

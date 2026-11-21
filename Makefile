@@ -7,13 +7,24 @@ AGENT     := $(HOME)/Library/LaunchAgents/$(BUNDLE_ID).plist
 LOG       := $(HOME)/Library/Logs/$(APP_NAME).log
 USER_ID   := $(shell id -u)
 
-.PHONY: all app install uninstall restart logs probe clean
+.PHONY: all app test coverage install uninstall restart logs probe clean
 
 all: app
 
-$(BUILD)/$(APP_NAME): Sources/main.swift
+SOURCES   := Package.swift $(shell find Sources -name '*.swift')
+
+$(BUILD)/$(APP_NAME): $(SOURCES)
 	@mkdir -p $(BUILD)
-	swiftc -O -swift-version 5 Sources/main.swift -o $@
+	swift build -c release --product $(APP_NAME)
+	cp "$$(swift build -c release --show-bin-path)/$(APP_NAME)" $@
+
+test:
+	swift test
+
+coverage:
+	swift test --enable-code-coverage
+	xcrun llvm-cov report "$$(swift build --show-bin-path)/MuseCoreTests.xctest/Contents/MacOS/MuseCoreTests" \
+		-instr-profile "$$(swift build --show-bin-path)/codecov/default.profdata" -ignore-filename-regex='Tests/|\.build/'
 
 $(BUILD)/AppIcon.icns: assets/logo.png
 	@rm -rf $(BUILD)/AppIcon.iconset && mkdir -p $(BUILD)/AppIcon.iconset
@@ -23,19 +34,22 @@ $(BUILD)/AppIcon.icns: assets/logo.png
 	done
 	iconutil -c icns $(BUILD)/AppIcon.iconset -o $@
 
-app: $(BUILD)/$(APP_NAME) $(BUILD)/AppIcon.icns Resources/Info.plist
+app: $(BUILD)/$(APP_NAME) $(BUILD)/AppIcon.icns Resources/Info.plist Resources/launchagent.plist
 	@rm -rf $(APP) && mkdir -p $(APP)/Contents/MacOS $(APP)/Contents/Resources
 	cp $(BUILD)/$(APP_NAME) $(APP)/Contents/MacOS/
 	cp Resources/Info.plist $(APP)/Contents/
 	cp $(BUILD)/AppIcon.icns $(APP)/Contents/Resources/
+	cp Resources/launchagent.plist $(APP)/Contents/Resources/   # template for the Launch at Login toggle
 	codesign --force --sign - --identifier $(BUNDLE_ID) $(APP)
 
 install: app
 	-launchctl bootout gui/$(USER_ID)/$(BUNDLE_ID) 2>/dev/null
+	@# bootout returns before the old job is gone; bootstrapping too early fails with "5: Input/output error".
+	@for i in $$(seq 50); do launchctl print gui/$(USER_ID)/$(BUNDLE_ID) >/dev/null 2>&1 || break; sleep 0.1; done
 	@mkdir -p $(INSTALL_DIR) && rm -rf $(INSTALL_DIR)/$(APP_NAME).app
 	cp -R $(APP) $(INSTALL_DIR)/
 	sed -e 's|__APP__|$(INSTALL_DIR)/$(APP_NAME).app|' -e 's|__LOG__|$(LOG)|' Resources/launchagent.plist > $(AGENT)
-	launchctl bootstrap gui/$(USER_ID) $(AGENT)
+	launchctl bootstrap gui/$(USER_ID) $(AGENT) || (sleep 1 && launchctl bootstrap gui/$(USER_ID) $(AGENT))
 	@echo "Installed. Turn on Muse in System Settings > Privacy & Security > Accessibility."
 	@open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 
@@ -55,4 +69,4 @@ probe: $(BUILD)/$(APP_NAME)
 	$(BUILD)/$(APP_NAME) --probe
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) .build
