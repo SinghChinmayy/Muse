@@ -2,7 +2,7 @@
 /// One finger: blocked. Two or more: allowed. Momentum after lift-off: allowed if the
 /// gesture that started it used two fingers.
 public enum ScrollGate {
-    public static func allow(fingers: Int, sessionMax: Int, lastTwoFinger: Double, now: Double, momentum: Bool) -> Bool {
+    public static func allow(fingers: Int, sessionMax: Int, lastTwoFinger: Double, now: Double, momentum: Bool, enabled: Bool = true) -> Bool {
         if fingers > 0 && !momentum {
             return fingers >= 2 || now - lastTwoFinger < 0.25   // tolerate a finger briefly lifting
         }

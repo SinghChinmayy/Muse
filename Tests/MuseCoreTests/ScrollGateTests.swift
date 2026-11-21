@@ -18,3 +18,10 @@ import Testing
         #expect(!ScrollGate.allow(fingers: 0, sessionMax: 1, lastTwoFinger: 0, now: 10, momentum: true))
     }
 }
+
+extension ScrollGateTests {
+    @Test func pausedMuseLetsOneFingerScrollThrough() {
+        #expect(ScrollGate.allow(fingers: 1, sessionMax: 1, lastTwoFinger: 0, now: 10, momentum: false, enabled: false))
+        #expect(ScrollGate.allow(fingers: 0, sessionMax: 1, lastTwoFinger: 0, now: 10, momentum: true, enabled: false))
+    }
+}
