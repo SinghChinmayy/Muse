@@ -10,6 +10,7 @@ public struct Settings: Equatable {
     public var invertX = false
     public var invertY = false
     public var tapToClick = false
+    public var opticalEnabled = true    // the mouse's own optical sensor moves the cursor
 
     public init() {}
 
