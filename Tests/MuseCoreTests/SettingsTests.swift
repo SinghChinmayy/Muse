@@ -31,3 +31,18 @@ extension SettingsTests {
         #expect(s.invertY == true)
     }
 }
+
+extension SettingsTests {
+    @Test func saveWritesOnlyChangedValuesAndClearsDefaults() {
+        let d = freshDefaults()
+        d.set(0.07, forKey: "deadzone")       // stale value now back at default
+        var s = Settings()
+        s.cursorSpeed = 2.0; s.invertX = true
+        s.save(to: d)
+        #expect(d.object(forKey: "cursorSpeed") as? Double == 2.0)
+        #expect(d.object(forKey: "invertX") as? Bool == true)
+        #expect(d.object(forKey: "deadzone") == nil)
+        #expect(d.object(forKey: "enabled") == nil)
+        #expect(Settings.load(from: d) == s)
+    }
+}

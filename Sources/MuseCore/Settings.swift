@@ -29,4 +29,6 @@ public struct Settings: Equatable {
         b("invertX", &s.invertX); b("invertY", &s.invertY)
         return s
     }
+
+    public func save(to d: UserDefaults) {}
 }
