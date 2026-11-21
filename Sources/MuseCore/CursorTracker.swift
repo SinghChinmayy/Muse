@@ -12,7 +12,7 @@ public final class CursorTracker {
     /// Feed the single touching finger (or nil when not exactly one). Positions are normalized
     /// surface units. Returns whole-pixel deltas to move the cursor by, or nil for no move.
     public func update(id: Int32?, x: Double, y: Double, settings s: Settings) -> (dx: Double, dy: Double)? {
-        guard s.cursorEnabled, let id else { trackID = -1; tracking = false; return nil }
+        guard s.enabled, s.cursorEnabled, let id else { trackID = -1; tracking = false; return nil }
         if id != trackID {                 // new finger (or 2 -> 1 transition): re-anchor, no jump
             trackID = id; lastPos = (x, y); startPos = (x, y); tracking = false; remainder = (0, 0)
             return nil
