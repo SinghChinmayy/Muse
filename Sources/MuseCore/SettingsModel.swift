@@ -13,4 +13,6 @@ public final class SettingsModel: ObservableObject {
         self.defaults = defaults; self.apply = apply
         settings = Settings.load(from: defaults)
     }
+
+    public func reload() {}
 }
