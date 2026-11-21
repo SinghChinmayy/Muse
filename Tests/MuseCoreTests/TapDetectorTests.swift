@@ -48,3 +48,12 @@ extension TapDetectorTests {
         #expect(t.frame(touches: [], now: 10.1, settings: s) == nil)
     }
 }
+
+extension TapDetectorTests {
+    @Test func secondQuickTapIsADoubleClick() {
+        let t = TapDetector(doubleClickInterval: 0.5)
+        #expect(tap(t, at: 10) == 1)
+        #expect(tap(t, at: 10.3) == 2)
+        #expect(tap(t, at: 12) == 1)      // too late: a fresh single click
+    }
+}

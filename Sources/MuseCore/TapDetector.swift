@@ -10,7 +10,7 @@ public final class TapDetector {
     private var startPos = (x: 0.0, y: 0.0)
     private var spoiled = false            // this touch can no longer be a tap
 
-    public init() {}
+    public init(doubleClickInterval: Double = 0.5) {}
 
     /// Feed every Magic Mouse frame. Returns the click count (1 = single, 2 = double, ...)
     /// on the frame that ends a tap, otherwise nil.
