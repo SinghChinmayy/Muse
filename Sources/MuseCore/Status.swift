@@ -17,6 +17,7 @@ public struct Status: Equatable {
     /// Clicking the status line opens Privacy & Security > Accessibility.
     public var opensAccessibilitySettings: Bool { !trusted }
 
-    public var symbolName: String { "" }
-    public var dimmed: Bool { false }
+    /// SF Symbol for the menu bar icon.
+    public var symbolName: String { enabled ? "magicmouse.fill" : "magicmouse" }
+    public var dimmed: Bool { !enabled }
 }
