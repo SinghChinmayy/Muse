@@ -29,3 +29,15 @@ extension LoginAgentTests {
         try a.setEnabled(false)   // already off: no error
     }
 }
+
+extension LoginAgentTests {
+    /// Quit from the menu exits 0; launchd must not bring Muse straight back. Crashes still restart.
+    @Test func shippedTemplateRestartsOnlyAfterCrash() throws {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Resources/launchagent.plist")
+        let plist = try #require(NSDictionary(contentsOf: url))
+        let keepAlive = try #require(plist["KeepAlive"] as? [String: Any])
+        #expect(keepAlive["SuccessfulExit"] as? Bool == false)
+    }
+}
