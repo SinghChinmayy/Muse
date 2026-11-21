@@ -29,11 +29,7 @@ let mouseFamilies: Set<Int32> = [112, 113, 114]
 let lock = NSLock()
 var mouseDevices = Set<UInt>()
 var knownDeviceIDs = Set<UInt64>()
-var mouseFingers = 0
-var sessionMax = 0            // max fingers since mouse surface was last empty
-var lastTwoFinger = 0.0       // last time >= 2 fingers on mouse
-var lastMouseTouch = 0.0
-var lastOtherTouch = 0.0      // trackpad etc.
+let session = TouchSession()
 
 // ---- Settings ----
 // Live copy of the prefs in defaults (domain io.github.singhchinmayy.Muse). The menu bar and
@@ -81,18 +77,11 @@ let touchCallback: MTCallback = { dev, touches, n, _, _ in
     let now = CFAbsoluteTimeGetCurrent()
     lock.lock()
     if mouseDevices.contains(UInt(bitPattern: dev)) {
-        // Only one finger, and not right after a two-finger gesture.
-        handleOneFinger(id: count == 1 && now - lastTwoFinger > 0.25 ? oneID : nil, x: oneX, y: oneY)
-        if count > 0 {
-            if mouseFingers == 0 { sessionMax = 0 }
-            sessionMax = max(sessionMax, count)
-            lastMouseTouch = now
-            if count >= 2 { lastTwoFinger = now }
-        }
-        if debug && count != mouseFingers { log("mouse fingers: \(count)") }
-        mouseFingers = count
-    } else if count > 0 {
-        lastOtherTouch = now
+        if debug && count != session.mouseFingers { log("mouse fingers: \(count)") }
+        let cursorAllowed = session.mouseFrame(fingers: count, now: now)
+        handleOneFinger(id: cursorAllowed ? oneID : nil, x: oneX, y: oneY)
+    } else {
+        session.otherFrame(fingers: count, now: now)
     }
     lock.unlock()
     return 0
@@ -140,20 +129,14 @@ let tapCallback: CGEventTapCallBack = { _, type, event, _ in
         if let gTap { CGEvent.tapEnable(tap: gTap, enable: true) }
         return Unmanaged.passUnretained(event)
     }
-    guard type == .scrollWheel,
-          event.getIntegerValueField(.scrollWheelEventIsContinuous) != 0 // real wheels pass
-    else { return Unmanaged.passUnretained(event) }
-
-    let now = CFAbsoluteTimeGetCurrent()
+    guard type == .scrollWheel else { return Unmanaged.passUnretained(event) }
+    let continuous = event.getIntegerValueField(.scrollWheelEventIsContinuous) != 0
     let momentum = event.getIntegerValueField(.scrollWheelEventMomentumPhase) != 0
     lock.lock()
-    let fingers = mouseFingers, smax = sessionMax, l2 = lastTwoFinger, enabled = settings.enabled
-    let mouseIsSource = lastMouseTouch >= lastOtherTouch && (fingers > 0 || momentum || now - lastMouseTouch < 1.0)
+    let allow = session.allowScroll(continuous: continuous, momentum: momentum,
+                                    now: CFAbsoluteTimeGetCurrent(), enabled: settings.enabled)
+    let fingers = session.mouseFingers
     lock.unlock()
-    guard mouseIsSource else { return Unmanaged.passUnretained(event) }
-
-    let allow = ScrollGate.allow(fingers: fingers, sessionMax: smax, lastTwoFinger: l2, now: now, momentum: momentum,
-                                 enabled: enabled)
     if debug && !allow { log("blocked scroll (fingers=\(fingers) momentum=\(momentum))") }
     return allow ? Unmanaged.passUnretained(event) : nil
 }
