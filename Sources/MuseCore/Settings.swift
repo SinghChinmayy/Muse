@@ -38,4 +38,7 @@ public struct Settings: Equatable {
         put("cursorSpeed", cursorSpeed, f.cursorSpeed); put("cursorAccel", cursorAccel, f.cursorAccel)
         put("deadzone", deadzone, f.deadzone); put("invertX", invertX, f.invertX); put("invertY", invertY, f.invertY)
     }
+
+    public static let keys: [String] = []
+    public static func reset(_ d: UserDefaults) {}
 }

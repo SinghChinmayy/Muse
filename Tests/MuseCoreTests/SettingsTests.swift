@@ -46,3 +46,16 @@ extension SettingsTests {
         #expect(Settings.load(from: d) == s)
     }
 }
+
+extension SettingsTests {
+    @Test func resetClearsSettingKeysButKeepsOtherPrefs() {
+        let d = freshDefaults()
+        Settings(enabled: false, cursorEnabled: false, cursorSpeed: 2, cursorAccel: 2,
+                 deadzone: 0.08, invertX: true, invertY: true).save(to: d)
+        d.set(false, forKey: "showMenuBarIcon")
+        Settings.reset(d)
+        #expect(Settings.load(from: d) == Settings())
+        #expect(d.dictionaryRepresentation().keys.filter(Settings.keys.contains).isEmpty)
+        #expect(d.object(forKey: "showMenuBarIcon") as? Bool == false)
+    }
+}
