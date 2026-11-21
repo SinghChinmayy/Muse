@@ -9,3 +9,23 @@ import Testing
                 == "<string>/Users/x/Applications/Muse.app/Contents/MacOS/Muse</string><string>/Users/x/Library/Logs/Muse.log</string>")
     }
 }
+
+extension LoginAgentTests {
+    func agent() -> LoginAgent {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("MuseTests-\(UUID().uuidString)")
+        return LoginAgent(plistURL: dir.appendingPathComponent("LaunchAgents/muse.plist"),
+                          template: "<string>__APP__</string><string>__LOG__</string>",
+                          appPath: "/A/Muse.app", logPath: "/L/Muse.log")
+    }
+
+    @Test func enableWritesRenderedPlistAndDisableRemovesIt() throws {
+        let a = agent()
+        #expect(!a.isEnabled)
+        try a.setEnabled(true)
+        #expect(a.isEnabled)
+        #expect(try String(contentsOf: a.plistURL, encoding: .utf8) == "<string>/A/Muse.app</string><string>/L/Muse.log</string>")
+        try a.setEnabled(false)
+        #expect(!a.isEnabled)
+        try a.setEnabled(false)   // already off: no error
+    }
+}
