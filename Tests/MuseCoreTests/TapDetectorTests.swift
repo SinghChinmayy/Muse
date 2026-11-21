@@ -65,3 +65,9 @@ extension TapDetectorTests {
         #expect(tap(TapDetector(), at: 10, settings: paused) == nil)
     }
 }
+
+extension TapDetectorTests {
+    @Test func emptyFrameWithoutATouchDoesNotClick() {
+        #expect(TapDetector().frame(touches: [], now: 10, settings: Self.on) == nil)
+    }
+}
