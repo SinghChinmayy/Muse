@@ -12,3 +12,14 @@ import Testing
         #expect(Status(trusted: true, mouseConnected: true, enabled: true).title == "Magic Mouse Connected")
     }
 }
+
+extension StatusTests {
+    @Test func iconIsFilledWhenEnabledAndDimmedOutlineWhenPaused() {
+        let on = Status(trusted: true, mouseConnected: true, enabled: true)
+        #expect(on.symbolName == "magicmouse.fill")
+        #expect(!on.dimmed)
+        let paused = Status(trusted: true, mouseConnected: true, enabled: false)
+        #expect(paused.symbolName == "magicmouse")
+        #expect(paused.dimmed)
+    }
+}

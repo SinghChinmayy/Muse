@@ -16,4 +16,7 @@ public struct Status: Equatable {
 
     /// Clicking the status line opens Privacy & Security > Accessibility.
     public var opensAccessibilitySettings: Bool { !trusted }
+
+    public var symbolName: String { "" }
+    public var dimmed: Bool { false }
 }
