@@ -39,6 +39,8 @@ public struct Settings: Equatable {
         put("deadzone", deadzone, f.deadzone); put("invertX", invertX, f.invertX); put("invertY", invertY, f.invertY)
     }
 
-    public static let keys: [String] = []
-    public static func reset(_ d: UserDefaults) {}
+    public static let keys = ["enabled", "cursorEnabled", "cursorSpeed", "cursorAccel", "deadzone", "invertX", "invertY"]
+
+    /// Back to factory values. Leaves non-setting prefs (e.g. showMenuBarIcon) alone.
+    public static func reset(_ d: UserDefaults) { keys.forEach(d.removeObject(forKey:)) }
 }
