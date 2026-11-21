@@ -18,8 +18,8 @@ let MTDeviceStart = sym("MTDeviceStart", (@convention(c) (MTDeviceRef, Int32) ->
 let MTDeviceGetFamilyID = sym("MTDeviceGetFamilyID", (@convention(c) (MTDeviceRef, UnsafeMutablePointer<Int32>) -> Int32).self)
 let MTDeviceGetDeviceID = sym("MTDeviceGetDeviceID", (@convention(c) (MTDeviceRef, UnsafeMutablePointer<UInt64>) -> Int32).self)
 
-let args = CommandLine.arguments
-let debug = args.contains("--debug")
+let options = LaunchOptions(arguments: CommandLine.arguments)
+let debug = options.debug
 func log(_ s: String) { FileHandle.standardError.write((s + "\n").data(using: .utf8)!) }
 
 // Shared state (touch callback thread <-> event tap on main thread)
@@ -40,18 +40,16 @@ func displayBounds() -> CGRect {
     var ids = [CGDirectDisplayID](repeating: 0, count: 16)
     var n: UInt32 = 0
     CGGetActiveDisplayList(16, &ids, &n)
-    return ids.prefix(Int(n)).reduce(CGRect.null) { $0.union(CGDisplayBounds($1)) }
+    return CursorPlacement.union(ids.prefix(Int(n)).map(CGDisplayBounds))
 }
 
 func moveCursor(dx: Double, dy: Double) {
     guard let loc = CGEvent(source: nil)?.location else { return }
-    let b = displayBounds()
-    let p = CGPoint(x: min(max(loc.x + dx, b.minX), b.maxX - 1), y: min(max(loc.y + dy, b.minY), b.maxY - 1))
-    let left = CGEventSource.buttonState(.combinedSessionState, button: .left)
-    let right = CGEventSource.buttonState(.combinedSessionState, button: .right)
-    let type: CGEventType = left ? .leftMouseDragged : right ? .rightMouseDragged : .mouseMoved
-    guard let e = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: p,
-                          mouseButton: right && !left ? .right : .left) else { return }
+    let p = CursorPlacement.clamp(CGPoint(x: loc.x + dx, y: loc.y + dy), to: displayBounds())
+    let kind = CursorPlacement.event(leftDown: CGEventSource.buttonState(.combinedSessionState, button: .left),
+                                     rightDown: CGEventSource.buttonState(.combinedSessionState, button: .right))
+    guard let e = CGEvent(mouseEventSource: nil, mouseType: kind.type, mouseCursorPosition: p,
+                          mouseButton: kind.button) else { return }
     e.setIntegerValueField(.mouseEventDeltaX, value: Int64(dx.rounded()))
     e.setIntegerValueField(.mouseEventDeltaY, value: Int64(dy.rounded()))
     e.post(tap: .cghidEventTap)
@@ -112,7 +110,7 @@ func magicMouseConnected() -> Bool {
     }
 }
 
-if args.contains("--probe") {
+if options.probe {
     scanDevices()
     exit(0)
 }
