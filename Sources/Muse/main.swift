@@ -22,13 +22,9 @@ let args = CommandLine.arguments
 let debug = args.contains("--debug")
 func log(_ s: String) { FileHandle.standardError.write((s + "\n").data(using: .utf8)!) }
 
-// Magic Mouse family IDs (Magic Mouse 1/2/USB-C). Trackpads are 98+ / 128+.
-let mouseFamilies: Set<Int32> = [112, 113, 114]
-
 // Shared state (touch callback thread <-> event tap on main thread)
 let lock = NSLock()
-var mouseDevices = Set<UInt>()
-var knownDeviceIDs = Set<UInt64>()
+var devices = DeviceRegistry()
 let session = TouchSession()
 
 // ---- Settings ----
@@ -76,7 +72,7 @@ let touchCallback: MTCallback = { dev, touches, n, _, _ in
     let oneID = one.id, oneX = one.x, oneY = one.y
     let now = CFAbsoluteTimeGetCurrent()
     lock.lock()
-    if mouseDevices.contains(UInt(bitPattern: dev)) {
+    if devices.isMouse(handle: UInt(bitPattern: dev)) {
         if debug && count != session.mouseFingers { log("mouse fingers: \(count)") }
         let cursorAllowed = session.mouseFrame(fingers: count, now: now)
         handleOneFinger(id: cursorAllowed ? oneID : nil, x: oneX, y: oneY)
@@ -95,11 +91,10 @@ func scanDevices() {
         _ = MTDeviceGetDeviceID(dev, &id)
         _ = MTDeviceGetFamilyID(dev, &fam)
         lock.lock()
-        let isNew = knownDeviceIDs.insert(id).inserted
-        if isNew && mouseFamilies.contains(fam) { mouseDevices.insert(UInt(bitPattern: dev)) }
+        let isNew = devices.register(id: id, family: fam, handle: UInt(bitPattern: dev))
         lock.unlock()
         if isNew {
-            log("device id=\(id) family=\(fam) \(mouseFamilies.contains(fam) ? "-> MAGIC MOUSE" : "")")
+            log("device id=\(id) family=\(fam) \(DeviceRegistry.isMagicMouse(family: fam) ? "-> MAGIC MOUSE" : "")")
             _ = Unmanaged.passRetained(obj) // keep alive
             MTRegisterContactFrameCallback(dev, touchCallback)
             MTDeviceStart(dev, 0)
@@ -113,7 +108,7 @@ func magicMouseConnected() -> Bool {
     return list.contains { obj in
         var fam: Int32 = 0
         _ = MTDeviceGetFamilyID(Unmanaged.passUnretained(obj).toOpaque(), &fam)
-        return mouseFamilies.contains(fam)
+        return DeviceRegistry.isMagicMouse(family: fam)
     }
 }
 
@@ -166,7 +161,7 @@ if !startTap() {
 // Pick up the mouse again after reconnect / sleep.
 Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in scanDevices() }
 NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
-    lock.lock(); knownDeviceIDs.removeAll(); mouseDevices.removeAll(); lock.unlock()
+    lock.lock(); devices.reset(); lock.unlock()
     scanDevices()
 }
 let app = NSApplication.shared
