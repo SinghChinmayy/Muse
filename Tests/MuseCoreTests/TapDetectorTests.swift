@@ -16,3 +16,9 @@ import Testing
         #expect(tap(TapDetector(), at: 10) == 1)
     }
 }
+
+extension TapDetectorTests {
+    @Test func restingFingerDoesNotClick() {
+        #expect(tap(TapDetector(), at: 10, for: 0.5) == nil)
+    }
+}
