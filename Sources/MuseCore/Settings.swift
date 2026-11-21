@@ -21,8 +21,9 @@ public struct Settings: Equatable {
 
     public static func load(from d: UserDefaults) -> Settings {
         var s = Settings()
-        func b(_ k: String, _ v: inout Bool) { if let x = d.object(forKey: k) as? Bool { v = x } }
-        func n(_ k: String, _ v: inout Double) { if let x = d.object(forKey: k) as? Double { v = x } }
+        // bool(forKey:)/double(forKey:) also parse strings, which `defaults write` stores without -bool/-float.
+        func b(_ k: String, _ v: inout Bool) { if d.object(forKey: k) != nil { v = d.bool(forKey: k) } }
+        func n(_ k: String, _ v: inout Double) { if d.object(forKey: k) != nil { v = d.double(forKey: k) } }
         b("enabled", &s.enabled); b("cursorEnabled", &s.cursorEnabled)
         n("cursorSpeed", &s.cursorSpeed); n("cursorAccel", &s.cursorAccel); n("deadzone", &s.deadzone)
         b("invertX", &s.invertX); b("invertY", &s.invertY)
