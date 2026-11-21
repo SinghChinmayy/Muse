@@ -74,21 +74,10 @@ func handleOneFinger(id: Int32?, x: Double, y: Double) {
 
 let touchCallback: MTCallback = { dev, touches, n, _, _ in
     guard let dev else { return 0 }
-    var count = 0
-    var oneID: Int32 = 0, oneX = 0.0, oneY = 0.0
-    if let t = touches {
-        for i in 0..<Int(n) {
-            // MTTouch is 96 bytes: id@16, state@20, normalized pos x@32 y@36. state 3=make, 4=touching, 5=break.
-            let base = i * 96
-            let state = t.load(fromByteOffset: base + 20, as: Int32.self)
-            if state >= 3 && state <= 5 {
-                count += 1
-                oneID = t.load(fromByteOffset: base + 16, as: Int32.self)
-                oneX = Double(t.load(fromByteOffset: base + 32, as: Float.self))
-                oneY = Double(t.load(fromByteOffset: base + 36, as: Float.self))
-            }
-        }
-    }
+    let active = TouchFrame.activeTouches(touches, count: Int(n))
+    let count = active.count
+    let one = active.last ?? Touch(id: 0, x: 0, y: 0)
+    let oneID = one.id, oneX = one.x, oneY = one.y
     let now = CFAbsoluteTimeGetCurrent()
     lock.lock()
     if mouseDevices.contains(UInt(bitPattern: dev)) {
