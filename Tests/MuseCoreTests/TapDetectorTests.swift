@@ -22,3 +22,9 @@ extension TapDetectorTests {
         #expect(tap(TapDetector(), at: 10, for: 0.5) == nil)
     }
 }
+
+extension TapDetectorTests {
+    @Test func slidingFingerDoesNotClick() {
+        #expect(tap(TapDetector(), at: 10, to: (0.6, 0.5)) == nil)
+    }
+}
