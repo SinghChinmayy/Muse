@@ -4,7 +4,11 @@
 
 <p align="center">Use your Magic Mouse like a tiny trackpad on macOS.</p>
 
-<p align="center"><a href="https://muse.chinmaysingh.me">muse.chinmaysingh.me</a></p>
+For Mac users who want to move the pointer without sliding their Magic Mouse across the desk, Muse turns its touch surface into a small trackpad.
+
+[Product page and screenshots](https://muse.chinmaysingh.me) · [Case study](https://chinmaysingh.me/projects/muse)
+
+<p align="center"><img src="assets/settings.png" width="380" alt="Muse settings for touch cursor movement, mouse sensor and tap to click"></p>
 
 - **One finger slides the cursor**, like on a trackpad, so you don't have to move the mouse.
 - **Two fingers scroll.** Scrolling with one finger is turned off.
